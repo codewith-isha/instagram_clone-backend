@@ -5,6 +5,8 @@ const User = require("../models/auth");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 
+// signup page 
+
 router.post("/singup", async (req, res) => {
   const { name, email, password } = req.body;
   console.log(name, email, password);
@@ -37,27 +39,26 @@ router.post("/singup", async (req, res) => {
         })
       }
 })
+ 
 
-    
-   
-  
+//  login page 
 
-
-router.post("/login", (req, res) => {
+router.post("/login", async(req, res) => {
   const { email, password } = req.body;
   if (!email || !password) {
     res.status(422).json({
       message: `Please add all the fields !!`,
     });
   }
-  User.findOne(
-    { email: email }.then((dbUser) => {
+
+  const dbUser =  await User.findOne({email:email})
+
       if (!dbUser) {
         res.status(404).json({
           message: `User is not found with this id !!`,
         });
       } else {
-        jwt.sign(
+         jwt.sign(
           {email },
           process.env.SECRETKEY,
           function (err, token) {
@@ -66,7 +67,6 @@ router.post("/login", (req, res) => {
         );
       }
     })
-  );
-});
+  
 
 module.exports = router;
