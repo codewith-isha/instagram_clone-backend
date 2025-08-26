@@ -70,4 +70,5 @@ router.get("/protected", requireLogin, (req, res) => {
   });
 });
 
+
 module.exports = router;
