@@ -19,7 +19,7 @@ app.get("/api/health", (req, res) => {
 
 app.use("/api/auth", require("./controllers/auth"));
 app.use("/api/post", require("./controllers/post"));
-
+app.use("/api/user", require("./controllers/user"));
 app.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);
 });

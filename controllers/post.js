@@ -33,88 +33,94 @@ router.get("/allpost", requireLogin, async (req, res) => {
   const allpost = await Post.find();
   res.status(200).json(allpost);
 });
-// post like route 
-router.post("/like", requireLogin, async (req,res)=>{
-  try{
-  const result= await Post.findByIdAndUpdate(req.body.postId,{
-    $push :{
-      likes: req.user._id,
-    },
-  },
-  {
-    new:true
-  },
-  await res.status(200).json({
-    msg:`Post Liked By ${req.user.name}`
-  })
-)
-  }catch(err){
+// post like route
+router.post("/like", requireLogin, async (req, res) => {
+  try {
+    const result = await Post.findByIdAndUpdate(
+      req.body.postId,
+      {
+        $push: {
+          likes: req.user._id,
+        },
+      },
+      {
+        new: true,
+      },
+      await res.status(200).json({
+        msg: `Post Liked By ${req.user.name}`,
+      })
+    );
+  } catch (err) {
     res.status(404).json({
-      msg :`something went wrong!!`
-    })
+      msg: `something went wrong!!`,
+    });
   }
-})
+});
+// unlike post route
+router.post("/unlike", requireLogin, async (req, res) => {
+  try {
+    const result = await Post.findByIdAndUpdate(
+      req.body.postId,
+      {
+        $pull: {
+          likes: req.user._id,
+        },
+      },
+      await res.status(200).json({
+        msg: `Post Unliked By ${req.user.name}`,
+      })
+    );
+  } catch (err) {
+    res.status(404).json({
+      msg: `something went wrong!!`,
+    });
+  }
+});
+// comment route
+router.put("/comment", requireLogin, async (req, res) => {
+  const comment = {
+    text: req.body.text,
+    postedBy: req.user._id,
+  };
+  try {
+    const result = await Post.findByIdAndUpdate(
+      req.body.postId,
+      {
+        $push: {
+          comments: {
+            comment,
+          },
+        },
+      },
+      {
+        new: true,
+      }
+    );
+    await res.status(200).json({
+      msg: `comment added successfully !!`,
+      result,
+    });
+  } catch (err) {
+    res.status(404).json({
+      msg: `Something went wrong !!`,
+    });
+  }
+});
 
-// unlike post route 
-router.post("/unlike", requireLogin, async (req,res)=>{
-  try{
-  const result= await Post.findByIdAndUpdate(req.body.postId,{
-    $pull :{
-      likes: req.user._id,
-    },
-  },
-  await res.status(200).json({
-    msg:`Post Unliked By ${req.user.name}`
-  })
-)
-  }catch(err){
-    res.status(404).json({
-      msg :`something went wrong!!`
-    })
+// delete route
+router.delete("/deletepost/:postId", requireLogin, async (req, res) => {
+  try {
+    const result = await Post.findById({_id: req.params.postId})
+    if(result.postedBy._id.toString() === req.user._id.toString()){
+      await Post.findByIdAndDelete(result._id);
+    }
+    res.status(200).json({
+      msg: `Post deleted successfully`,
+    });
+  } catch (err) {
+    console.log("Something went wrong !!");
   }
-})
-// comment route 
-router.post("/comment" , requireLogin ,async(req, res)=>{
-try{
-  const result = await Post.findByIdAndUpdate(
-    req.body.postId,{
-     $push:{
-     comments:{
-      text:req.body.text,
-     postedBy :req.user._id
-    },
-   },
-  },
-  {
-    new:true,
-  })
-  await res.status(200).json({
-  msg:`comment added successfully !!`,
-  result
-})
-  
-}
-  catch(err){
-  res.status(404).json({
-    msg :`Something went wrong !!`
-  })
-}
-})
-// delete route 
-// router.delete("/deletepost/:postId", requireLogin , async(req,res)=>{
-//   const {postId} = req.params
-//  try {
-//   const result =await Post.findByIdAndDelete(
-//    { 
-//     _id: postId,
-//     postedBy:req.user._id,
-// })
-//   res.status(200).json({
-//     msg :`Post deleted successfully`
-//   })
-// }catch(err){
-//   console.log("Something went wrong !!")
-// }
-// })
+});
+
 
 module.exports = router;
