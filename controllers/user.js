@@ -18,16 +18,27 @@ Router.get("/profile/:id", requireLogin, async (req, res) => {
 });
 // follow route 
 Router.put("/follow", requireLogin, async (req, res) => {
+
   try {
-    const result = await User.findByIdAndUpdate(req.body.followId, {
-      $push: {
+   const alreadyFollowing = await User.findOne({
+      _id: req.body.followId,
+      followers: req.user._id
+    });
+    if(alreadyFollowing){
+      res.status(400).json({
+        message : `Already followed !!`
+      })
+    }
+    const result = await User.findByIdAndUpdate(req.body.followId.trim(),
+     {
+      $addToSet: {
         followers: req.user._id,
       },
     });
     await User.findByIdAndUpdate(
       req.user._id,
       { 
-        $push: {
+        $addToSet: {
           following: req.body.followId,
         },
       },
@@ -39,7 +50,10 @@ Router.put("/follow", requireLogin, async (req, res) => {
       msg: `followed successfully !!`,
     });
   } catch (error) {
-    console.log("something went wrong !!");
+   res.status(404).json({
+    message :`Internal Error!!`
+   })
+   console.log(error)
   }
 });
 // unfollow route 
